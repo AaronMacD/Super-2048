@@ -6,23 +6,23 @@ public class Text2048 {
     private GameController game = new GameController();
     private Scanner scanner = new Scanner(System.in);
 
-    public void run(){
-        while(game.getStatus() == GameStatus.IN_PROGRESS){
+    public void run() {
+        while (game.getStatus() == GameStatus.IN_PROGRESS) {
             game.getBoard().printBoard();
             System.out.println("Move in which direction? (WASD): ");
             String direction = scanner.nextLine();
-            switch (direction){
+            switch (direction) {
                 case "W":
-                    game.moveVertical( -1);
+                    game.recurseUp(0, 0);
                     break;
                 case "S":
-                    game.moveVertical(1);
+                    game.recurseDown(game.getDimension() - 1, 0);
                     break;
                 case "A":
-                    game.moveHorizontal(-1);
+                    game.recurseLeft(0, 0);
                     break;
                 case "D":
-                    game.moveHorizontal(1);
+                    game.recurseRight(0, game.getDimension() - 1);
                     break;
                 case "Q":
                     System.out.println("Thank you for playing!\n\n");
@@ -32,19 +32,19 @@ public class Text2048 {
                     System.out.println("That is not a valid command.");
                     continue;
             }
-            if(game.getBoard().hasEmpty()){
+            if (game.getBoard().hasEmpty()) {
                 game.newTile();
             }
         }
 
-        if(game.getStatus() == GameStatus.WON){
+        if (game.getStatus() == GameStatus.WON) {
             System.out.println("CONGRATULATIONS!\n\n");
         } else {
             System.out.println("Better luck next time.\n\n");
         }
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         Text2048 game = new Text2048();
         game.run();
     }

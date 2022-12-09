@@ -1,255 +1,360 @@
 package Project3;
 
-import java.util.Arrays;
 import java.util.Random;
 
+/**
+ * Game Controller Class. Contains all the methods to run a 2048 game through a separate interface.
+ */
 public class GameController {
-    private Board board = new Board();
-    private int score;
-    private int dimension;
-    private int winValue;
 
-    public GameController(){
-        board = new Board();
-        dimension = 4;
-        winValue = 2048;
+    /************************Instance Variables***********************************/
+
+
+    /**
+     * Object made using the Board class. Contains a doubly linked list containing tiles, which contain
+     * our numbers to be displayed.
+     */
+    private Board board = new Board();
+    /**
+     * GameStatus enum to keep track of winning/losing for interfaces.
+     */
+    private GameStatus gameStatus;
+    /**
+     * Integer holding score value. Accessable via getter/setter for interfaces.
+     */
+    private int score;
+    /**
+     * Integer holding the dimension of the board. 4 by default, but can be modified via constructor parameter.
+     */
+    private int dimension = 4;
+    /**
+     * Integer holding the win value of the game. 2048 by default, hence the name of the game.
+     */
+    private int winValue = 2048;
+
+
+    /********************************Constructors******************************/
+
+
+    /**
+     * Default Constructor. Runs a game with board size 4 and win condition 2048.
+     */
+    public GameController() {
         reset();
     }
-    public GameController(int dim, int winValue){
+
+    /**
+     * Constructor for setting dimension and win value
+     *
+     * @param dim      Board size set by the user
+     * @param winValue Win value set by the user (NYI)
+     */
+    public GameController(int dim, int winValue) {
         this.dimension = dim;
         this.winValue = winValue;
-        board = new Board(dim);
         reset();
     }
 
-    public void setBoard(Board board){this.board = board;}
-    public Board getBoard(){return this.board;}
-    public void setScore(int score){this.score = score;}
-    public int getScore(){return this.score;}
+    /*******************************Setters/Getters**************************/
 
+    /**
+     * setter for board. Replaces existing Board object with a new Board object for the GameController's
+     * private Board field.
+     *
+     * @param board new board to replace the old one.
+     */
+    public void setBoard(Board board) {
+        this.board = board;
+    }
+
+    /**
+     * Getter for board.
+     *
+     * @return returns the Board object in active use by GameController.
+     */
+    public Board getBoard() {
+        return this.board;
+    }
+
+    /**
+     * Setter for score
+     *
+     * @param score the new integer to replace current score private field.
+     */
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    /**
+     * Getter for score
+     *
+     * @return returns int score of current GameController
+     */
+    public int getScore() {
+        return this.score;
+    }
+
+    /**
+     * Setter for the games current Status
+     *
+     * @param gs a new GameStatus enum value to change GameControllers gamestatus enum field.
+     */
+    public void setStatus(GameStatus gs) {
+        this.gameStatus = gs;
+    }
+
+    /**
+     * Getter for the current GameController's GameStatus enum field.
+     *
+     * @return a GameStatus enum representing win/loss/in progress for the current GameController
+     */
+    public GameStatus getStatus() {
+        return this.gameStatus;
+    }
+
+    /**
+     * Getter for dimension.
+     *
+     * @return int dimension of the board
+     */
+    public int getDimension() {
+        return this.dimension;
+    }
+
+
+    /************************** Methods******************************/
+
+    /**
+     * reset method. Creates a new board, resets the game status to in progress, and generates new
+     * starting numbers on the board.
+     */
     public void reset() {
-        for (int row = 0; row < 4; row++){
-            for (int col = 0; col < 4; col++) {
-                board[row][col] = 0;
-            }
-        }
-        random2Placement();
-        random2Placement();
-    }
-    public boolean gameOver(){
-        if(boardFull() && noMoveAvailableLoop()){
-            return true;
-        }
-        return false;
-    }
-    public void selectedUp() {
-        int[][] previousBoard = deepCopy(board);
-        for (int col = 0; col < 4; col++) {
-            collapseUp2(3, col);
-            collapseUp2(3, col);
-            combineUp(0, col);
-            collapseUp2(3, col);
-            collapseUp2(3, col);
-        }
-        if(!Arrays.deepEquals(board, previousBoard)){
-            random2Placement();
-        }
-    }
-    public void selectedDown(){
-        int[][] previousBoard = deepCopy(board);
-        combinationDown(0, 0, 1);
-        moveDown(0,0);
-        if(!Arrays.deepEquals(board, previousBoard)){
-            random2Placement();
-        }
-    }
-    public void selectedLeft(){
-        int[][] previousBoard = deepCopy(board);
-        for (int row = 0; row < 4; row++){
-            collapseLeft(row, 3);
-            collapseLeft(row, 3);
-            combineLeft(row, 0);
-            collapseLeft(row, 3);
-            collapseLeft(row, 3);
-        }
-        if(!Arrays.deepEquals(board, previousBoard)){
-            random2Placement();
-        }
-    }
-    public void selectedRight(){
-        int[][] previousBoard = deepCopy(board);
-        for (int row = 0; row < 4; row++){
-            collapseRight(row, 0);
-            collapseRight(row, 0);
-            combineRight(row, 3);
-            collapseRight(row, 0);
-            collapseRight(row, 0);
-
-        }
-        if(!Arrays.deepEquals(board, previousBoard)){
-            random2Placement();
-        }
-    }
-    private void combineUp(int row, int col){
-        if(row != 3){
-            if(board[row][col] != 0 && board[row][col] == board[row+1][col]){
-                board[row][col] *= 2;
-                board[row+1][col] = 0;
-            }
-            combineUp(row+1, col);
-        }
-    }
-    private void collapseUp1(int row, int col){
-        if(row != 3){
-            if(board[row][col] != 0 && board[row-1][col] == 0){
-                board[row-1][col] = board[row][col];
-                board[row][col] = 0;
-            }
-            collapseUp1(row+1, col);
-        }
-    }
-    private void collapseUp2(int row, int col){
-        if(row != 0){
-            if(board[row][col] != 0 && board[row-1][col] == 0){
-                board[row-1][col] = board[row][col];
-                board[row][col] = 0;
-            }
-            collapseUp2(row-1, col);
-        }
+        board = new Board(dimension);
+        gameStatus = GameStatus.IN_PROGRESS;
+        newTile();
+        newTile();
     }
 
-    private void combineDown(int row, int col){
-        if(row != 0){
-            if(board[row][col] != 0 && board[row][col] == board[row-1][col]){
-                board[row][col] *= 2;
-                board[row-1][col] = 0;
-            }
-            combineDown(row-1, col);
-        }
-    }
-    private void collapseDown(int row, int col){
-        if(row != 3){
-            if(board[row][col] != 0 && board[row+1][col] == 0){
-                board[row+1][col] = board[row][col];
-                board[row][col] = 0;
-            }
-            collapseDown(row+1, col);
-        }
-    }
-    private void combineLeft(int row, int col){
-        if(col != 3){
-            if(board[row][col] != 0 && board[row][col] == board[row][col+1]){
-                board[row][col] *= 2;
-                board[row][col+1] = 0;
-            }
-            combineLeft(row, col+1);
-        }
-    }
-    private void collapseLeft(int row, int col){
-        if(col != 0){
-            if(board[row][col] != 0 && board[row][col-1] == 0){
-                board[row][col-1] = board[row][col];
-                board[row][col] = 0;
-            }
-            collapseLeft(row, col-1);
-        }
-    }
-    private void combineRight(int row, int col){
-        if(col != 0){
-            if(board[row][col] != 0 && board[row][col] == board[row][col-1]){
-                board[row][col] *= 2;
-                board[row][col-1] = 0;
-            }
-            combineRight(row, col-1);
-        }
-    }
-    private void collapseRight(int row, int col){
-        if(col != 3){
-            if(board[row][col] != 0 && board[row][col+1] == 0){
-                board[row][col+1] = board[row][col];
-                board[row][col] = 0;
-            }
-            collapseRight(row, col+1);
-        }
-    }
-    private boolean noMoveAvailableLoop(){
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 4; col++) {
-                if (board[row][col] == board[row+1][col]) {
-                    return false;
+    /**
+     * newTile function generates two numbers (if available) randomly on the board,
+     * choosing either 2 or 4 randomly.
+     */
+    public void newTile() {
+        Random random = new Random();
+        int num = random.nextInt(2);
+        while (board.hasEmpty()) {
+            int row = random.nextInt(dimension);
+            int col = random.nextInt(dimension);
+            if (board.getTile(row, col) == null) {
+                if (num == 0) {
+                    board.setTile(row, col, new Tile(2));
+                } else {
+                    board.setTile(row, col, new Tile(4));
                 }
-            }
-        }
-        for (int row = 0; row < 4; row++) {
-            for (int col = 0; col < 3; col++) {
-                if (board[row][col] == board[row][col+1]) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    private boolean noMoveAvailableRecursive(){
-        return false;
-    }
-    private boolean boardFull(){
-        for (int row = 0; row < 4; row++) {
-            for (int col = 0; col < 4; col++) {
-                if (board[row][col] == 0) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    private void random2Placement(){
-        while(!boardFull()) {
-            Random random = new Random();
-            int row = random.nextInt(4);
-            int col = random.nextInt(4);
-            if(board[row][col] == 0){
-                board[row][col] = 2;
                 break;
             }
         }
     }
-    private int[][] deepCopy(int[][] board){
-        int[][] result = new int[board.length][];
-        for (int i = 0; i < board.length; i++){
-            result[i] = Arrays.copyOf(board[i], board[i].length);
+
+    /**
+     * recurseDown Method. When the interface calls this method, it moves and consolidates every number to
+     * the bottom most positions of the board, given space and equivalent numbers.
+     *
+     * @param row Row number, used to keep track of recursion.
+     * @param col Column number, used to keep track of recursion.
+     */
+
+
+    public void recurseDown(int row, int col) {
+        Tile currentTile = board.getTile(row, col);
+        if (row < dimension - 1 && currentTile != null && board.getTile(row + 1, col) == null) {
+            board.setTile(row + 1, col, board.getTile(row, col));
+            board.setTile(row, col, null);
+            if (row < dimension - 2) {
+                recurseDown(row + 1, col);
+            }
+        } else if (row < dimension - 1 && currentTile != null && board.getValue(row, col) == board.getValue(row + 1, col)) {
+            board.getTile(row + 1, col).setValue(board.getValue(row + 1, col) * 2);
+            board.setTile(row, col, null);
+            if (row < dimension - 2) {
+                recurseDown(row + 1, col);
+            }
         }
-        return result;
+
+        if (col < dimension - 1 && row == 0) {
+            recurseDown(dimension - 1, col + 1);
+        } else if (row > 0) {
+            recurseDown(row - 1, col);
+        }
     }
 
-    private void combinationDown(int row, int col, int index){
-        if (row == dimension-1 && col != dimension-1) {
-            combinationDown(0, col + 1, 1);
+
+    /**
+     * recurseUp Method. When the interface calls this method, it moves and consolidates every number to
+     * the uppermost positions of the board, given space and equivalent numbers.
+     *
+     * @param row Row number, used to keep track of recursion.
+     * @param col Column number, used to keep track of recursion.
+     */
+    public void recurseUp(int row, int col) {
+        Tile currentTile = board.getTile(row, col);
+        if (row > 0 && currentTile != null && board.getTile(row - 1, col) == null) {
+            board.setTile(row - 1, col, board.getTile(row, col));
+            board.setTile(row, col, null);
+            if (row > 1) {
+                recurseUp(row - 1, col);
+            }
+        } else if (row > 0 && currentTile != null && board.getValue(row, col) == board.getValue(row - 1, col)) {
+            board.getTile(row - 1, col).setValue(board.getValue(row - 1, col) * 2);
+            board.setTile(row, col, null);
+            if (row > 1) {
+                recurseUp(row - 1, col);
+            }
         }
-        else if (board[row][col] == 0){
-            combinationDown(row+1, col, 1);
+
+        if (col < dimension - 1 && row == dimension - 1) {
+            recurseUp(0, col + 1);
         }
-        else if (((row + index) < dimension -1) && board[row+index][col] == 0){
-            combinationDown(row, col, index+1);
+        if (row < dimension - 1) {
+            recurseUp(row + 1, col);
         }
-        else if (board[row][col] == board[row+index][col]){
-            board[row][col] = 0;
-            board[row+index][col] *= 2;
-            combinationDown(row+1, col, 1);
+    }
+
+    /**
+     * recurseRight Method. When the interface calls this method, it moves and consolidates every number to
+     * the right most positions of the board, given space and equivalent numbers.
+     *
+     * @param row Row number, used to keep track of recursion.
+     * @param col Column number, used to keep track of recursion.
+     */
+
+    public void recurseRight(int row, int col) {
+        Tile currentTile = board.getTile(row, col);
+        if (col < dimension - 1 && currentTile != null && board.getTile(row, col + 1) == null) {
+            board.setTile(row, col + 1, board.getTile(row, col));
+            board.setTile(row, col, null);
+            if (col < dimension - 2) {
+                recurseRight(row, col + 1);
+            }
+        } else if (col < dimension - 1 && currentTile != null && board.getValue(row, col) == board.getValue(row, col + 1)) {
+            board.getTile(row, col + 1).setValue(board.getValue(row, col + 1) * 2);
+            board.setTile(row, col, null);
+            if (col < dimension - 2) {
+                recurseRight(row, col + 1);
+            }
+        }
+        if (row < dimension - 1 && col == 0) {
+            recurseRight(row + 1, dimension - 1);
+        } else if (col > 0) {
+            recurseRight(row, col - 1);
         }
 
     }
-    private void moveDown(int row, int col){
-        if (row == dimension-1 && col != dimension - 1){
-            moveDown(0, col + 1);
+
+    /**
+     * recurseLeft Method. When the interface calls this method, it moves and consolidates every number to
+     * the left most positions of the board, given space and equivalent numbers.
+     *
+     * @param row Row number, used to keep track of recursion.
+     * @param col Column number, used to keep track of recursion.
+     */
+    public void recurseLeft(int row, int col) {
+        Tile currentTile = board.getTile(row, col);
+        //check for current tile and check for empty next tile, then move and follow
+        if (col > 0 && currentTile != null && board.getTile(row, col - 1) == null) {
+            board.setTile(row, col - 1, board.getTile(row, col));
+            board.setTile(row, col, null);
+            if (col > 1) {
+                recurseLeft(row, col - 1);
+            }
+        }
+        //check current tile and check next tile, then combine and follow
+        else if (col > 0 && currentTile != null && board.getValue(row, col) == board.getValue(row, col - 1)) {
+            board.getTile(row, col - 1).setValue(board.getValue(row, col - 1) * 2);
+            board.setTile(row, col, null);
+            if (col > 1) {
+                recurseLeft(row, col - 1);
+            }
+        }
+        //if end of column and not at end of rows, move to next row
+        if (row < dimension - 1 && col == dimension - 1) {
+            recurseLeft(row + 1, 0);
+        }
+        //if not at end of column, increase column
+        else if (col < dimension - 1) {
+            recurseLeft(row, col + 1);
+        }
+    }
+
+    /**
+     * Checks for a win or loss and updates the GameStatus variable of the gamecontroller
+     */
+    public void updateStatus() {
+        checkWin();
+        checkLoss();
+    }
+
+    /********************* PRIVATE HELPER METHODS ***********************/
+
+
+    /*
+    Check win scans the whole board, checking to see if there is a match for win condition.
+     */
+    private void checkWin() {
+        for (int i = 0; i < this.dimension; i++) {
+            for (int j = 0; j < this.dimension; j++) {
+                if (board.getTile(i, j) != null && board.getValue(i, j) == this.winValue) {
+                    gameStatus = GameStatus.WON;
+                }
+            }
+        }
+    }
+
+    /*
+    Check loss confirms an empty space exists, and if not, checks for a similar neighbor on each value.
+    If a similar value exists, the game continues. If not, the game status is declared lost.
+     */
+    private void checkLoss() {
+        if (!board.hasEmpty()) {
+            for (int i = 0; i < this.dimension; i++) {
+                for (int j = 0; j < this.dimension; j++) {
+                    if (findSimilarNeighbors(i, j)) {
+                        gameStatus = GameStatus.IN_PROGRESS;
+                        return;
+                    }
+                }
+            }
+            gameStatus = GameStatus.LOST;
+        }
+    }
+
+    /*
+    Private method findSimilarNeighbors checks each position around a given row x col for an identical value.
+    Returns true if there is a neighbor with same value.
+    False if there is not a neighbor of same value.
+     */
+    private boolean findSimilarNeighbors(int row, int col) {
+        int val = board.getValue(row, col);
+        int above = 0;
+        int below = 0;
+        int left = 0;
+        int right = 0;
+        if (row > 0) {
+            above = board.getValue(row - 1, col);
+        }
+        if (row < this.dimension - 1) {
+            below = board.getValue(row + 1, col);
+        }
+        if (col > 1) {
+            left = board.getValue(row, col - 1);
+        }
+        if (col < this.dimension - 1) {
+            right = board.getValue(row, col + 1);
         }
 
-        else if(board[row][col] != 0 && board[row+1][col] == 0){
-            board[row+1][col] = board[row][col];
-            board[row][col] = 0;
-            moveDown(row+1, col);
+        if (val == above || val == below || val == left || val == right) {
+            return true;
         }
-        else if(row < dimension-1){
-            moveDown(row+1, col);
-        }
+        return false;
     }
 }

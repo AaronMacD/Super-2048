@@ -1,7 +1,5 @@
 # Super-2048
 
-11/16/22 WIP
-
 2048 with adjustable board size and win condition.
 
 Written in Java
